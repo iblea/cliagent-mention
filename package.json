@@ -1,0 +1,125 @@
+{
+  "name": "cliagent-mention-iblea",
+  "displayName": "cliagent_mention",
+  "description": "cli agent @ mention",
+	"publisher": "iblea",
+	"author": {
+		"name": "iblea"
+	},
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Other"
+  ],
+	"keywords": [
+		"cliagent"
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/iblea/cliagent-mention/blob/master/README.md",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/iblea/cliagent-mention.git"
+	},
+	"bugs": {
+		"url": "https://github.com/iblea/cliagent-mention/issues"
+	},
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cliagent-mention.codexMention",
+        "title": "Codex Mention"
+      },
+      {
+        "command": "cliagent-mention.claudecodeMention",
+        "title": "Claude Code Mention"
+      },
+      {
+        "command": "cliagent-mention.customMention",
+        "title": "Custom Prefix / Suffix Mention"
+      }
+    ],
+    "configuration": {
+      "title": "CLI Agent Mention",
+      "properties": {
+        "cliagent-mention.logLevel": {
+          "type": "string",
+          "default": "warn",
+          "enum": [
+            "off",
+            "trace",
+            "debug",
+            "info",
+            "warn",
+            "error"
+          ],
+          "enumDescriptions": [
+            "No logs will be output",
+            "All logs will be output (most verbose)",
+            "Debug, Info, Warning and Error logs will be output",
+            "Info, Warning and Error logs will be output",
+            "Warning and Error logs will be output",
+            "Only Error logs will be output"
+          ],
+          "description": "Controls the log level for the output channel"
+        },
+        "cliagent-mention.prefixString": {
+          "type": "string",
+          "default": "@",
+          "description": "The prefix string to trigger the mention (e.g., '@')"
+        },
+        "cliagent-mention.suffixString": {
+          "type": "string",
+          "default": ":",
+          "description": "The suffix string to trigger the mention (e.g., ':')"
+        }
+      }
+    },
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "cliagent-mention.codexMention"
+				},
+        {
+          "command": "cliagent-mention.claudecodeMention"
+        },
+        {
+          "command": "cliagent-mention.customMention"
+        }
+      ]
+    },
+		"keybindings": [
+			{
+				"command": "cliagent-mention.codexMention"
+			},
+      {
+        "command": "cliagent-mention.claudecodeMention"
+      },
+      {
+        "command": "cliagent-mention.customMention"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.104.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "eslint": "^9.34.0",
+    "typescript": "^5.9.2",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
