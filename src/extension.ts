@@ -1,6 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import path from 'path/posix';
+import * as pathNative from 'path';
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
 import Logger from './logger';
@@ -10,11 +10,97 @@ import { ClaudeCodeActionProvider, handleAskClaudeCode, handleAskClaudeCodeComma
 export let prefixString = "@";
 export let suffixString = ":";
 
+// Windows drive letter pattern (C:\, D:\, etc.)
+const windowsDrivePattern = /^([A-Za-z]):[\\\/]/;
+
+/**
+ * Check if a path is a Windows path (starts with drive letter like C:\)
+ */
+function isWindowsPath(filePath: string): boolean {
+	return windowsDrivePattern.test(filePath);
+}
+
+/**
+ * Get drive letter from Windows path (returns lowercase)
+ * e.g., C:\Users\test -> 'c', D:\data -> 'd'
+ */
+function getWindowsDriveLetter(filePath: string): string | undefined {
+	const match = filePath.match(windowsDrivePattern);
+	return match ? match[1].toLowerCase() : undefined;
+}
+
+/**
+ * Check if a path is a WSL mount path (starts with /mnt/)
+ */
+function isWslMountPath(filePath: string): boolean {
+	return /^\/mnt\/[a-z]\//i.test(filePath);
+}
+
+/**
+ * Convert Windows path to WSL path
+ * e.g., C:\Users\test\file.txt -> /mnt/c/Users/test/file.txt
+ */
+function windowsToWslPath(windowsPath: string): string {
+	const match = windowsPath.match(windowsDrivePattern);
+	if (!match) {
+		return windowsPath;
+	}
+	const driveLetter = match[1].toLowerCase();
+	// Remove drive letter and colon, replace backslashes with forward slashes
+	const pathWithoutDrive = windowsPath.substring(2).replace(/\\/g, '/');
+	return `/mnt/${driveLetter}${pathWithoutDrive}`;
+}
+
+/**
+ * Calculate relative path, handling Windows VSCode + WSL terminal case
+ */
 function toRelative(from: Uri | undefined, to: Uri | undefined): string | undefined {
 	if (!from || !to) {
 		return undefined;
 	}
-	return path.relative(from.fsPath, to.fsPath);
+
+	let fromPath = from.fsPath;
+	let toPath = to.fsPath;
+
+	// Handle Windows different drives case (e.g., terminal on E:\, file on C:\)
+	// Return absolute path when drives are different
+	if (isWindowsPath(fromPath) && isWindowsPath(toPath)) {
+		const fromDrive = getWindowsDriveLetter(fromPath);
+		const toDrive = getWindowsDriveLetter(toPath);
+		if (fromDrive && toDrive && fromDrive !== toDrive) {
+			// Different drives - return absolute path (keep backslashes for Windows terminal)
+			return toPath;
+		}
+	}
+
+	// Handle Windows VSCode + WSL terminal case:
+	// - File path is Windows style (C:\...)
+	// - Terminal cwd is WSL style (/mnt/c/...)
+	if (isWslMountPath(fromPath) && isWindowsPath(toPath)) {
+		// Convert Windows file path to WSL path for proper relative calculation
+		toPath = windowsToWslPath(toPath);
+		// Use POSIX-style relative calculation
+		const posixPath = require('path/posix');
+		return posixPath.relative(fromPath, toPath);
+	}
+
+	// Handle reverse case: WSL file + Windows terminal (less common but possible)
+	if (isWindowsPath(fromPath) && isWslMountPath(toPath)) {
+		fromPath = windowsToWslPath(fromPath);
+		const posixPath = require('path/posix');
+		return posixPath.relative(fromPath, toPath);
+	}
+
+	// Standard case: both paths are same type
+	// Use native path for proper relative calculation on all platforms (Windows: \, Unix: /)
+	const relativePath = pathNative.relative(fromPath, toPath);
+
+	// Keep backslashes for Windows terminal (PowerShell, CMD)
+	// Use forward slashes for Unix/WSL terminal
+	if (isWindowsPath(fromPath)) {
+		return relativePath;
+	}
+	return relativePath.split(pathNative.sep).join('/');
 }
 
 
