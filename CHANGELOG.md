@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.4]
+
+- Fix: Windows Path not working.
+
 ## [0.0.3]
 
 - Fix: Lowered the required vscode version. (1.104.0 -> 1.83.0)
