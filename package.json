@@ -6,7 +6,7 @@
 	"author": {
 		"name": "iblea"
 	},
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.83.0"
   },
@@ -42,6 +42,10 @@
       {
         "command": "cliagent-mention.customMention",
         "title": "Custom Prefix / Suffix Mention"
+      },
+      {
+        "command": "cliagent-mention.customboxMention",
+        "title": "Custombox Mention"
       },
       {
         "command": "cliagent-mention.askClaudeCode",
@@ -86,6 +90,21 @@
           "type": "string",
           "default": "Analyze this error/warning and provide to solve it solution.",
           "description": "The prompt to use for quick fixes"
+        },
+        "cliagent-mention.rangeStyle": {
+          "type": "string",
+          "default": "colon",
+          "enum": [
+            "colon",
+            "claude",
+            "github"
+          ],
+          "enumDescriptions": [
+            "Colon style - :line or :startLine-endLine",
+            "Claude Code style - #Lline or #LstartLine-endLine",
+            "GitHub style - #Lline or #LstartLine-LendLine"
+          ],
+          "description": "The line range format style for custombox mention"
         }
       }
     },
@@ -99,6 +118,9 @@
         },
         {
           "command": "cliagent-mention.customMention"
+        },
+        {
+          "command": "cliagent-mention.customboxMention"
         }
       ]
     },
@@ -111,6 +133,9 @@
       },
       {
         "command": "cliagent-mention.customMention"
+      },
+      {
+        "command": "cliagent-mention.customboxMention"
       }
     ]
   },

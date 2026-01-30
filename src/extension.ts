@@ -9,6 +9,7 @@ import { ClaudeCodeActionProvider, handleAskClaudeCode, handleAskClaudeCodeComma
 
 export let prefixString = "@";
 export let suffixString = ":";
+export let rangeStyle = "colon";
 
 // Windows drive letter pattern (C:\, D:\, etc.)
 const windowsDrivePattern = /^([A-Za-z]):[\\\/]/;
@@ -160,6 +161,33 @@ function getCustomFormatLineSelected(startLine: number, endLine: number): string
 	}
 }
 
+function getCustomboxFormatLineSelected(startLine: number, endLine: number): string {
+	switch (rangeStyle) {
+		case 'claude':
+			// Claude Code style: #Lline or #LstartLine-endLine
+			if (startLine === endLine) {
+				return `#L${startLine}`;
+			} else {
+				return `#L${startLine}-${endLine}`;
+			}
+		case 'github':
+			// GitHub style: #Lline or #LstartLine-LendLine
+			if (startLine === endLine) {
+				return `#L${startLine}`;
+			} else {
+				return `#L${startLine}-L${endLine}`;
+			}
+		case 'colon':
+		default:
+			// Colon style: :line or :startLine-endLine
+			if (startLine === endLine) {
+				return `:${startLine}`;
+			} else {
+				return `:${startLine}-${endLine}`;
+			}
+	}
+}
+
 function setMentionStrings(logger: Logger, mentionFormatedFunc: (startLine: number, endLine: number) => string) {
 	// logger.show(); // Output 채널을 명시적으로 표시
 	const editor = vscode.window.activeTextEditor;
@@ -212,7 +240,8 @@ export function activate(context: vscode.ExtensionContext) {
 	// Load initial prefix and suffix strings from configuration
 	prefixString = config.get<string>('prefixString', '@');
 	suffixString = config.get<string>('suffixString', ':');
-	logger.info(`Initial configuration loaded - Prefix: ${prefixString}, Suffix: ${suffixString}`);
+	rangeStyle = config.get<string>('rangeStyle', 'colon');
+	logger.info(`Initial configuration loaded - Prefix: ${prefixString}, Suffix: ${suffixString}, RangeStyle: ${rangeStyle}`);
 
 	// Watch for configuration changes
 	context.subscriptions.push(
@@ -245,6 +274,16 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('cliagent-mention.rangeStyle')) {
+				const config = vscode.workspace.getConfiguration('cliagent-mention');
+				rangeStyle = config.get<string>('rangeStyle', 'colon');
+				logger.info(`Range style updated to: ${rangeStyle}`);
+			}
+		})
+	);
+
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -258,6 +297,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const disposable3 = vscode.commands.registerCommand('cliagent-mention.customMention', () => {
 		setMentionStrings(logger, getCustomFormatLineSelected);
+	});
+
+	const disposable5 = vscode.commands.registerCommand('cliagent-mention.customboxMention', () => {
+		setMentionStrings(logger, getCustomboxFormatLineSelected);
 	});
 
 	// Register "Ask to Claude Code" command
@@ -295,6 +338,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable2);
 	context.subscriptions.push(disposable3);
 	context.subscriptions.push(disposable4);
+	context.subscriptions.push(disposable5);
 	context.subscriptions.push(codeActionProvider);
 }
 

@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.5]
+
+- Feat: `cliagent-mention.customboxMention`, `cliagent-mention.rangeStyle` setting add.
+
 ## [0.0.4]
 
 - Fix: Windows Path not working.
