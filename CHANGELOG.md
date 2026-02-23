@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.6]
+
+- Feat: Add `cliagent-mention.separateFileAndLine` setting. Separate file path and line number with a space.
+  - In gemini-cli, the CLI agent crashes when file and line range are input together, so this option was added.
+
 ## [0.0.5]
 
 - Feat: `cliagent-mention.customboxMention`, `cliagent-mention.rangeStyle` setting add.

@@ -10,6 +10,7 @@ import { ClaudeCodeActionProvider, handleAskClaudeCode, handleAskClaudeCodeComma
 export let prefixString = "@";
 export let suffixString = ":";
 export let rangeStyle = "colon";
+export let separateFileAndLine = false;
 
 // Windows drive letter pattern (C:\, D:\, etc.)
 const windowsDrivePattern = /^([A-Za-z]):[\\\/]/;
@@ -205,6 +206,9 @@ function setMentionStrings(logger: Logger, mentionFormatedFunc: (startLine: numb
 		const startLine: number = editor.selection.start.line + 1; // 0-based index, so +1
 		const endLine: number = editor.selection.end.line + 1;
 		const lineAdder: string = mentionFormatedFunc(startLine, endLine);
+		if (separateFileAndLine) {
+			mentionedText += " ";
+		}
 		mentionedText += lineAdder;
 	}
 	mentionedText += " ";
@@ -241,7 +245,8 @@ export function activate(context: vscode.ExtensionContext) {
 	prefixString = config.get<string>('prefixString', '@');
 	suffixString = config.get<string>('suffixString', ':');
 	rangeStyle = config.get<string>('rangeStyle', 'colon');
-	logger.info(`Initial configuration loaded - Prefix: ${prefixString}, Suffix: ${suffixString}, RangeStyle: ${rangeStyle}`);
+	separateFileAndLine = config.get<boolean>('separateFileAndLine', false);
+	logger.info(`Initial configuration loaded - Prefix: ${prefixString}, Suffix: ${suffixString}, RangeStyle: ${rangeStyle}, SeparateFileAndLine: ${separateFileAndLine}`);
 
 	// Watch for configuration changes
 	context.subscriptions.push(
@@ -280,6 +285,16 @@ export function activate(context: vscode.ExtensionContext) {
 				const config = vscode.workspace.getConfiguration('cliagent-mention');
 				rangeStyle = config.get<string>('rangeStyle', 'colon');
 				logger.info(`Range style updated to: ${rangeStyle}`);
+			}
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('cliagent-mention.separateFileAndLine')) {
+				const config = vscode.workspace.getConfiguration('cliagent-mention');
+				separateFileAndLine = config.get<boolean>('separateFileAndLine', false);
+				logger.info(`Separate file and line updated to: ${separateFileAndLine}`);
 			}
 		})
 	);

@@ -6,7 +6,7 @@
 	"author": {
 		"name": "iblea"
 	},
-  "version": "0.0.5",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.83.0"
   },
@@ -105,6 +105,11 @@
             "GitHub style - #Lline or #LstartLine-LendLine"
           ],
           "description": "The line range format style for custombox mention"
+        },
+        "cliagent-mention.separateFileAndLine": {
+          "type": "boolean",
+          "default": false,
+          "description": "Separate file path and line number with a space (e.g., '@file :10' instead of '@file:10')"
         }
       }
     },
